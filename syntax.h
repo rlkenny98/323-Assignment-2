@@ -83,14 +83,13 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 					}
 
 					else
-					{
+					{	//Error in syntax
 						return false;
 					}
 				}
 
 				else
 				{
-					
 					assert(string_to_index(top_of_stack) != -1);
 					cout << "Asserting top of stack index'" << top_of_stack << "' is working..\n";
 
@@ -118,7 +117,7 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 					}
 
 					else
-					{
+					{	// Error in syntax
 						return false;
 					}
 				}
@@ -155,6 +154,7 @@ int string_to_index(string word)
 	else return -1;
 }
 
+// THIS CHANGES WITH THE PREDICTIVE TABLE 
 void print_rule(string statement, string prod_rule, ofstream& output_file)
 {
 	// Statement
