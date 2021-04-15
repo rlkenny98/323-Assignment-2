@@ -1,0 +1,7 @@
+! this is comment for this sample test code for arithmetic expressions!
+! this breaks our syntax analyzer once it his identifer 'b' !
+
+a + b;
+c+d;
+e-f;
+g*n;
