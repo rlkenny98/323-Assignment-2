@@ -10,27 +10,27 @@
 using namespace std;
 
 
-// Change all the variable names lmao 
+// this is changed and all its references 
 enum State {
-	STARTING_STATE,				// 0
-	IN_IDENTIFIER,				// 1
-	END_OF_IDENTIFIER,			// 2 final state
-	IN_NUMBER,					// 3
-	IN_FLOAT,					// 4
-	END_OF_NUMBER,				// 5 final state
-	IN_COMMENT,					// 6
-	END_OF_COMMENT,				// 7 final state
-	SYMBOLS						// 8 final state
+	initialState,					// 0
+	initialIdentifier,				// 1
+	endIdentifier,					// 2 final state
+	initialNumber,					// 3
+	initialFloat,					// 4
+	endNumber,						// 5 final state
+	initialComment,					// 6
+	endComment,						// 7 final state
+	symbol							// 8 final state
 };
 
 enum Input {
-	LETTER,			// 0
-	DIGIT,			// 1
-	SPACE,			// 2
-	EXCLAMATION,	// 3
-	DOLLAR_SIGN,	// 4
-	PERIOD,			// 5
-	OTHER,			// 6
+	letter,			// 0
+	digit,			// 1
+	space,			// 2
+	exclamationMark,// 3
+	dollarSign,		// 4
+	period,			// 5
+	other,			// 6
 	BACKUP			// 7 not an input, but a flag that tells the lexer when to back up 
 };
 
@@ -41,7 +41,7 @@ private:
 	const int NUM_OF_STATES = 9;
 	const int NUM_OF_INPUTS = 8;
 	const int NUM_OF_FINAL_STATES = 4;
-	const int final_states[4] = { END_OF_IDENTIFIER, END_OF_NUMBER, END_OF_COMMENT, SYMBOLS };
+	const int final_states[4] = { endIdentifier, endNumber, endComment, symbol };
 	int state_transition_table[9][8] =
 	{
 		{ 1, 3, 0, 6, 8, 4, 8, 0 },
@@ -70,7 +70,7 @@ public:
 
 	string getTokenName(int state, string lexeme) {
 
-		if (state == END_OF_IDENTIFIER) {
+		if (state == endIdentifier) {
 			if (lexeme == "int" || lexeme == "float" || lexeme == "bool" || lexeme == "if" || lexeme == "else" ||
 				lexeme == "then" || lexeme == "do" || lexeme == "while" || lexeme == "whileend" || lexeme == "do" ||
 				lexeme == "doend" || lexeme == "for" || lexeme == "and" || lexeme == "or" || lexeme == "function") {
@@ -81,15 +81,15 @@ public:
 			}
 		}
 
-		else if (state == END_OF_NUMBER) {
+		else if (state == endNumber) {
 			return "NUMBER";
 		}
 
-		else if (state == END_OF_COMMENT) {
+		else if (state == endComment) {
 			return "COMMENT";
 		}
 
-		else if (state == SYMBOLS) {
+		else if (state == symbol) {
 			if (lexeme == "*" || lexeme == "+" || lexeme == "-" || lexeme == "=" || lexeme == "/" ||
 				lexeme == ">" || lexeme == "<" /*|| lexeme == "%"*/) {
 				return "OPERATOR";
@@ -108,19 +108,19 @@ public:
 
 	int char_to_input(char code) {
 		if (isalpha(code))
-			return LETTER;
+			return letter;
 		else if (isdigit(code))
-			return DIGIT;
+			return digit;
 		else if (isspace(code))
-			return SPACE;
+			return space;
 		else if (code == '!')
-			return EXCLAMATION;
+			return exclamationMark;
 		else if (code == '$')
-			return DOLLAR_SIGN;
+			return dollarSign;
 		else if (code == '.')
-			return PERIOD;
+			return period;
 		else
-			return OTHER;
+			return other;
 	}
 
 	bool is_final_state(int curr_state) {

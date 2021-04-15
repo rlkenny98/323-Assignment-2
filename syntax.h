@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include <iomanip>
+#include <iostream>
 
 using namespace std;
 
@@ -11,12 +12,14 @@ struct tokens {
 		token = tok, lexeme = lex;
 	}
 };
-// Change function names
-bool analyze_syntax(std::vector<tokens>&, ofstream&);
-int string_to_index(string);
-void print_rule(string, string, ofstream&);
-// Change variable names
-bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
+
+// Changed function names here already
+bool syntaxAnalyze(std::vector<tokens>&, ofstream&);
+int stringIndexed(string);
+void ruleOutput(string, string, ofstream&);
+// Changed variable names
+
+bool syntaxAnalyze(std::vector<tokens>& token_vect, ofstream& opFile) {
 	// 2D vector to store our predictive table
 
 	//!!!!!!!!! FOCUS ON CHANGING PREDICTIVE TABLE RULES !!!!!!!!!!!!!!!!!!!
@@ -41,7 +44,6 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 			string_line.push_back(tokens(it->token, it->lexeme));
 		}
 
-		
 		else
 		{
 			stack.push_back("$");
@@ -50,28 +52,28 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 			string_line.push_back(tokens("$", "$"));
 
 			std::vector<tokens>::iterator current = string_line.begin();
-			string top_of_stack;
+			string TOS; // top of stack 
 			string token;
 
 			cout << "------------------------------------------" << endl;
 			cout << "Token: " << left << setw(25) << current->token <<
 				"Lexeme: " << current->lexeme << endl;
-			output_file << "------------------------------------------" << endl;
-			output_file << "Token: " << left << setw(25) << current->token <<
+			opFile << "------------------------------------------" << endl;
+			opFile << "Token: " << left << setw(25) << current->token <<
 				"Lexeme: " << current->lexeme << endl;
 
 			while (!stack.empty())
-			{
-				top_of_stack = stack.back();
+			{	cout << "Stack is not empty" << endl;
+				TOS = stack.back();
 				if (current->token == "IDENTIFIER") { token = "i"; }
 				else { token = current->lexeme; }
 
-				if (top_of_stack == "i" || top_of_stack == "=" || top_of_stack == "+" ||
-					top_of_stack == "-" || top_of_stack == "*" || top_of_stack == "/" ||
-					top_of_stack == "(" || top_of_stack == ")" || top_of_stack == "$")
+				if (TOS == "i" || TOS == "=" || TOS == "+" ||
+					TOS == "-" || TOS == "*" || TOS == "/" ||
+					TOS == "(" || TOS == ")" || TOS == "$")
 				{
-					if (top_of_stack == token)
-					{
+					if (TOS == token)
+					{	cout << "Top of stack is a token\n";
 						stack.pop_back();
 						current++;
 
@@ -80,8 +82,8 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 							cout << endl << "------------------------------------------" << endl;
 							cout << "Token: " << left << setw(25) << current->token <<
 								"Lexeme: " << current->lexeme << endl;
-							output_file << endl << "------------------------------------------" << endl;
-							output_file << "Token: " << left << setw(25) << current->token <<
+							opFile << endl << "------------------------------------------" << endl;
+							opFile << "Token: " << left << setw(25) << current->token <<
 								"Lexeme: " << current->lexeme << endl;
 						}
 					}
@@ -94,29 +96,29 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 
 				else
 				{
-					assert(string_to_index(top_of_stack) != -1);
-					cout << "Asserting top of stack index'" << top_of_stack << "' is working..\n";
+					assert(stringIndexed(TOS) != -1);
+					cout << "Asserting top of stack index'" << TOS << "' is working..\n";
 
 					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					cout << "Some whacky shit going wrong here\n"
 						<< "This is trying to call assert while converting token '" 
-						<< token << "' to index: " << string_to_index(token) << endl;
+						<< token << "' to index: " << stringIndexed(token) << endl;
 					// String to index will depend on the predictive table
-					assert(string_to_index(token) != -1);
+					assert(stringIndexed(token) != -1);
 					//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					
 					cout << "Finding rule"<< endl;
-					string prod_rule = predictive_table[string_to_index(top_of_stack)][string_to_index(token)];
+					string prodRule = predictive_table[stringIndexed(TOS)][stringIndexed(token)];
 
-					if (!prod_rule.empty())
+					if (!prodRule.empty())
 					{	cout << "Prod rule is empty"<< endl;
-						print_rule(top_of_stack, prod_rule, output_file);
+						ruleOutput(TOS, prodRule, opFile);
 
 						stack.pop_back();
-						while (!prod_rule.empty())
+						while (!prodRule.empty())
 						{
-							if (prod_rule != "e") { stack.push_back(string(1, prod_rule.back())); }
-							prod_rule.pop_back();
+							if (prodRule != "e") { stack.push_back(string(1, prodRule.back())); }
+							prodRule.pop_back();
 						}
 					}
 
@@ -131,10 +133,10 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 			cout << "Token: " << left << setw(25) << it->token <<
 				"Lexeme: " << it->lexeme << endl;
 			cout << "<Empty> -> Epsilon" << endl << endl;
-			output_file << endl << "------------------------------------------" << endl;
-			output_file << "Token: " << left << setw(25) << it->token <<
+			opFile << endl << "------------------------------------------" << endl;
+			opFile << "Token: " << left << setw(25) << it->token <<
 				"Lexeme: " << it->lexeme << endl;
-			output_file << "<Empty> -> Epsilon" << endl << endl;
+			opFile << "<Empty> -> Epsilon" << endl << endl;
 
 			string_line.clear();
 		}
@@ -143,103 +145,112 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 	return true;
 }
 
-// Change variable names
-int string_to_index(string word)
+// Changed this already 
+int stringIndexed(string word)
 {
-	if (word == "S" || word == "i") { return 0; }
-	else if (word == "E" || word == "=") { return 1; }
-	else if (word == "Q" || word == "+") { return 2; }
-	else if (word == "T" || word == "-") { return 3; }
-	else if (word == "R" || word == "*") { return 4; }
-	else if (word == "F" || word == "/") { return 5; }
-	else if (word == "(") { return 6; }
-	else if (word == ")") { return 7; }
-	else if (word == "$") { return 8; }
+	if (word == "S" || word == "i") 
+	{ return 0; }
+	else if (word == "E" || word == "=") 
+	{ return 1; }
+	else if (word == "Q" || word == "+") 
+	{ return 2; }
+	else if (word == "T" || word == "-") 
+	{ return 3; }
+	else if (word == "R" || word == "*") 
+	{ return 4; }
+	else if (word == "F" || word == "/") 
+	{ return 5; }
+	else if (word == "(") 
+	{ return 6; }
+	else if (word == ")") 
+	{ return 7; }
+	else if (word == "$") 
+	{ return 8; }
 	else return -1;
 }
 
-// Change variable names
-void print_rule(string statement, string prod_rule, ofstream& output_file)
+// Changed variable names here already
+void ruleOutput(string statement, string prodRule, ofstream& opFile)
 {
 	// Statement
 	if (statement == "S")
 	{
-		if (prod_rule == "i=E")
+		if (prodRule == "i=E")
 		{
 			cout << "<Statement> -> Identifier = <Expression>" << endl;
-			output_file << "<Statement> -> Identifier = <Expression>" << endl;
+			opFile << "<Statement> -> Identifier = <Expression>" << endl;
 		}
 	}
 	// Create a rule for Statement List
 	// Expression
 	else if (statement == "E")
 	{
-		if (prod_rule == "TQ")
+		if (prodRule == "TQ")
 		{
 			cout << "<Expression> -> <Term> <Expression Prime>" << endl;
-			output_file << "<Expression> -> <Term> <Expression Prime>" << endl;
+			opFile << "<Expression> -> <Term> <Expression Prime>" << endl;
 		}
 	}
 
 	// Expression Prime
 	else if (statement == "Q")
 	{
-		if (prod_rule == "+TQ")
+		if (prodRule == "+TQ")
 		{
 			cout << "<Expression Prime> -> + <Term> <Expression Prime>" << endl;
-			output_file << "<Expression Prime> -> + <Term> <Expression Prime>" << endl;
+			opFile << "<Expression Prime> -> + <Term> <Expression Prime>" << endl;
 		}
-		else if (prod_rule == "-TQ")
+		else if (prodRule == "-TQ")
 		{
 			cout << "<Expression Prime> -> - <Term> <Expression Prime>" << endl;
-			output_file << "<Expression Prime> -> - <Term> <Expression Prime>" << endl;
+			opFile << "<Expression Prime> -> - <Term> <Expression Prime>" << endl;
 		}
-		if (prod_rule == "e")
+		if (prodRule == "e")
 		{
 			cout << "<Expression Prime> -> <Epsilon>" << endl;
-			output_file << "<Expression Prime> -> <Epsilon>" << endl;
+			opFile << "<Expression Prime> -> <Epsilon>" << endl;
 		}
 	}
 	// Term
 	else if (statement == "T")
 	{
-		if (prod_rule == "FR")
+		if (prodRule == "FR")
 		{
 			cout << "<Term> -> <Factor> <Term Prime>" << endl;
-			output_file << "<Term> -> <Factor> <Term Prime>" << endl;
+			opFile << "<Term> -> <Factor> <Term Prime>" << endl;
 		}
 	}
 	// Term Prime
 	else if (statement == "R")
 	{
-		if (prod_rule == "*FR")
+		if (prodRule == "*FR")
 		{
 			cout << "<Term Prime> -> * <Factor> <Term Prime>" << endl;
-			output_file << "<Term Prime> -> * <Factor> <Term Prime>" << endl;
+			opFile << "<Term Prime> -> * <Factor> <Term Prime>" << endl;
 		}
-		else if (prod_rule == "/FR")
+		else if (prodRule == "/FR")
 		{
 			cout << "<Term Prime> -> / <Factor> <Term Prime>" << endl;
-			output_file << "<Term Prime> -> / <Factor> <Term Prime>" << endl;
+			opFile << "<Term Prime> -> / <Factor> <Term Prime>" << endl;
 		}
-		else if (prod_rule == "e")
+		else if (prodRule == "e")
 		{
 			cout << "<Term Prime> -> <Epsilon>" << endl;
-			output_file << "<Term Prime> -> <Epsilon>" << endl;
+			opFile << "<Term Prime> -> <Epsilon>" << endl;
 		}
 	}
 	// Factor
 	else if (statement == "F")
 	{
-		if (prod_rule == "i")
+		if (prodRule == "i")
 		{
 			cout << "<Factor> -> Identifier" << endl;
-			output_file << "<Factor> -> Identifier" << endl;
+			opFile << "<Factor> -> Identifier" << endl;
 		}
-		else if (prod_rule == "(E)")
+		else if (prodRule == "(E)")
 		{
 			cout << "<Factor> -> ( <Expression> )" << endl;
-			output_file << "<Factor> -> ( <Expression> )" << endl;
+			opFile << "<Factor> -> ( <Expression> )" << endl;
 		}
 	}
 }

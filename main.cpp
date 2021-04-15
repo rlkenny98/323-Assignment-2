@@ -73,7 +73,10 @@ int main(int argc, char *argv[])
 						lex += codeVector[vecString][i];
 					}
 					if (machine.getTokenName(state, lex) != "OTHER") {
-						lexerStorage.push_back(tokens(machine.getTokenName(state, lex), lex));
+
+						string tok = machine.getTokenName(state, lex);
+						cout << "token: " << tok << endl;
+						lexerStorage.push_back(tokens(tok, lex));
 					}
 				}
 				state = 0;
@@ -83,7 +86,7 @@ int main(int argc, char *argv[])
 
 	fout.open("output.txt");
 	if(!fout.is_open()){ cout << "Output File Error\n"; exit(1);}
-	if (!analyze_syntax(lexerStorage, fout)) {
+	if (!syntaxAnalyze(lexerStorage, fout)) {
 		cout << "Syntax error" << endl;
 		fout << "ERROR: syntax error found in the source code" << endl;
 	}
