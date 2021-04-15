@@ -11,13 +11,15 @@ struct tokens {
 		token = tok, lexeme = lex;
 	}
 };
-
+// Change function names
 bool analyze_syntax(std::vector<tokens>&, ofstream&);
 int string_to_index(string);
 void print_rule(string, string, ofstream&);
-
+// Change variable names
 bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
-	// 2D std::vector to store our predictive table
+	// 2D vector to store our predictive table
+
+	//!!!!!!!!! FOCUS ON CHANGING PREDICTIVE TABLE RULES !!!!!!!!!!!!!!!!!!!
 	std::vector<std::vector<string>> predictive_table = {
 		//			i    =     +     -      *     /      (       )      $ 
 		/*S*/	{ "i=E", "", ""   , ""   , ""   , ""   , ""   , ""   , "" },
@@ -27,6 +29,7 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 		/*T*/	{ ""   , "", "e"  , "e"  , "*FR", "/FR", ""   , "e"  , "e" },
 		/*F*/	{ "i"  , "", ""   , ""   , ""   , ""   , "(E)", ""   , "" }
 	};
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	std::vector<string> stack;
 	std::vector<tokens> string_line;
 	cout << "Hello from the syntax analyzer " << endl;
@@ -38,6 +41,7 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 			string_line.push_back(tokens(it->token, it->lexeme));
 		}
 
+		
 		else
 		{
 			stack.push_back("$");
@@ -139,7 +143,7 @@ bool analyze_syntax(std::vector<tokens>& token_vect, ofstream& output_file) {
 	return true;
 }
 
-// THIS CHANGES WITH THE PREDICTIVE TABLE 
+// Change variable names
 int string_to_index(string word)
 {
 	if (word == "S" || word == "i") { return 0; }
@@ -154,7 +158,7 @@ int string_to_index(string word)
 	else return -1;
 }
 
-// THIS CHANGES WITH THE PREDICTIVE TABLE 
+// Change variable names
 void print_rule(string statement, string prod_rule, ofstream& output_file)
 {
 	// Statement

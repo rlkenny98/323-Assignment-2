@@ -1,3 +1,6 @@
+#ifndef FSM_H
+#define FSM_H
+
 #pragma once
 //This file defines the State Machine class 
 #include <fstream>
@@ -6,6 +9,8 @@
 #include <vector>
 using namespace std;
 
+
+// Change all the variable names lmao 
 enum State {
 	STARTING_STATE,				// 0
 	IN_IDENTIFIER,				// 1
@@ -29,7 +34,7 @@ enum Input {
 	BACKUP			// 7 not an input, but a flag that tells the lexer when to back up 
 };
 
-class StateMachine {
+class FSM {
 
 private:
 
@@ -126,3 +131,4 @@ public:
 		return 0;
 	}
 };
+#endif

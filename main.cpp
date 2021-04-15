@@ -21,7 +21,7 @@
 
 // Include Libraries and header files
 #include <iostream>
-#include "state_machine.h"
+#include "FSM.h"
 #include "syntax.h"
 using namespace std;
 
@@ -48,38 +48,42 @@ int main(int argc, char *argv[])
 
 	//LEXER
 	cout << "Time for lexer to do its thing...." << endl;
-	vector<tokens> token_lexeme;
-	StateMachine FSM;
-	int curr_state = 0;
-	int lexeme_start = 0;
+	// These have been changed and are good to go
+	vector<tokens> lexerStorage;
+	FSM machine;
+	int state = 0;
+	int lexStart = 0;
 	
-	for (long long  unsigned int line = 0; line < codeVector.size(); line++) {
-		for (long long unsigned int char_ = 0; char_ <= codeVector[line].length(); char_++) {
-			if (curr_state == 0) {
-				lexeme_start = char_;
+	// Change variable names and logic/port to function
+		// These for loops need the ugly ass integer type because of the return type of .size() and .length()
+	for (long long unsigned int vecString = 0; vecString < codeVector.size(); vecString++) {
+		for (long long unsigned int vecChar = 0; vecChar <= codeVector[vecString].length(); vecChar++) {
+			if (state == 0) {
+				lexStart = vecChar;
 			}
-			int curr_input = FSM.char_to_input(codeVector[line][char_]);
-			curr_state = FSM.check_input(curr_state, curr_input);
-			if (FSM.is_final_state(curr_state)) {
-				if (FSM.should_back_up(curr_state)) {
-					char_--;
+			// Combined two lines
+			state = machine.check_input(state, machine.char_to_input(codeVector[vecString][vecChar]));
+			if (machine.is_final_state(state)) {
+				if (machine.should_back_up(state)) {
+					vecChar--;
 				}
-				if (curr_state != 7) {
+				if (state != 7) {
 					string lex = "";
-					for (long long unsigned int i = lexeme_start; i <= char_; i++) {
-						lex += codeVector[line][i];
+					for (long long unsigned int i = lexStart; i <= vecChar; i++) {
+						lex += codeVector[vecString][i];
 					}
-					if (FSM.getTokenName(curr_state, lex) != "OTHER") {
-						token_lexeme.push_back(tokens(FSM.getTokenName(curr_state, lex), lex));
+					if (machine.getTokenName(state, lex) != "OTHER") {
+						lexerStorage.push_back(tokens(machine.getTokenName(state, lex), lex));
 					}
 				}
-				curr_state = 0;
+				state = 0;
 			}
 		}
 	}
+
 	fout.open("output.txt");
 	if(!fout.is_open()){ cout << "Output File Error\n"; exit(1);}
-	if (!analyze_syntax(token_lexeme, fout)) {
+	if (!analyze_syntax(lexerStorage, fout)) {
 		cout << "Syntax error" << endl;
 		fout << "ERROR: syntax error found in the source code" << endl;
 	}
