@@ -7,9 +7,27 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 using namespace std;
+vector<string> keywords = {"int", "float", "bool","if", "else", 
+						"then", "endif", "endelse", "while", "whileend", "do", "doend", "for", 
+						"endfor", "STDinput", "STDoutput", "and", "or", "not"};
 
+const char operators[] = "*+-=/><";
+const int opSize = 8;
+const char separators[] ="'(){}[],.:;!";
+const int sepSize = 13;
 
+enum Input {
+	letter,			// 0
+	digit,			// 1
+	space,			// 2
+	exclamationMark,// 3
+	dollarSign,		// 4
+	period,			// 5
+	other,			// 6
+	BACKUP			// 7 not an input, but a flag that tells the lexer when to back up 
+};
 // this is changed and all its references 
 enum State {
 	initialState,					// 0
@@ -23,26 +41,9 @@ enum State {
 	symbol							// 8 final state
 };
 
-enum Input {
-	letter,			// 0
-	digit,			// 1
-	space,			// 2
-	exclamationMark,// 3
-	dollarSign,		// 4
-	period,			// 5
-	other,			// 6
-	BACKUP			// 7 not an input, but a flag that tells the lexer when to back up 
-};
-
 class FSM {
-
 private:
-
-	const int NUM_OF_STATES = 9;
-	const int NUM_OF_INPUTS = 8;
-	const int NUM_OF_FINAL_STATES = 4;
-	const int final_states[4] = { endIdentifier, endNumber, endComment, symbol };
-	int state_transition_table[9][8] =
+	const int transition_table[9][8] =
 	{
 		{ 1, 3, 0, 6, 8, 4, 8, 0 },
 		{ 1, 1, 2, 2, 1, 2, 2, 0 },
@@ -55,20 +56,24 @@ private:
 		{ 0, 0, 0, 0, 0, 0, 0, 0 }
 	};
 
+	const int NUM_OF_STATES = 9;
+	const int NUM_OF_INPUTS = 8;
+	const int NUM_OF_FINAL_STATES = 4;
+	const int final_states[4] = { endIdentifier, endNumber, endComment, symbol };
+	
 public:
-
-	int check_input(int state, int input) {
-		return state_transition_table[state][input];
+	int inputCheck(int state, int input) {
+		return transition_table[state][input];
 	}
 
-	bool should_back_up(int curr_state) {
-		if (state_transition_table[curr_state][BACKUP] == 1)
+	bool backup(int curr_state) {
+		if (transition_table[curr_state][BACKUP] == 1)
 			return 1;
 		else
 			return 0;
 	}
 
-	string getTokenName(int state, string lexeme) {
+	string getToken(int state, string lexeme) {
 
 		if (state == endIdentifier) {
 			if (lexeme == "int" || lexeme == "float" || lexeme == "bool" || lexeme == "if" || lexeme == "else" ||
@@ -91,7 +96,7 @@ public:
 
 		else if (state == symbol) {
 			if (lexeme == "*" || lexeme == "+" || lexeme == "-" || lexeme == "=" || lexeme == "/" ||
-				lexeme == ">" || lexeme == "<" /*|| lexeme == "%"*/) {
+				lexeme == ">" || lexeme == "<" || lexeme == "%") {
 				return "OPERATOR";
 			}
 			else if (lexeme == "'" || lexeme == "(" || lexeme == ")" || lexeme == "{" || lexeme == "}" ||
@@ -104,6 +109,54 @@ public:
 		}
 		else
 			return "ERROR";
+
+		// The switch statement below does not work. Use the initial if-else-if block until otherwise
+		/*
+		string result; 
+		switch(state){
+			case endIdentifier:
+			{	cout << "ENDIDENTIFIER"<<endl;
+				for(auto iter1 : keywords)
+				{
+      				if(lexeme.compare(iter1) == 0) 
+						result = "KEYWORD"; 
+					else 
+						result = "IDENTIFIER";
+				}
+				break;
+			}
+
+			case endComment:
+				cout<<"ENDCOMMENT"<<endl;
+				result = "COMMENT";
+				break;
+			
+			case endNumber:
+				cout<<"ENDNUMBER"<<endl;
+				result = "NUMBER";
+				break;
+
+			case symbol:
+				{
+				cout << "SYMBOL"<< endl;
+				for(int i = 0; i<opSize;i++){
+      				if(lexeme.at(0) == operators[i]) 
+					  {result = "OPERATOR";break;}
+				}
+				for(int i = 0; i<sepSize;i++){
+      				if(lexeme.at(0) == separators[i]) 
+					  {result = "SEPARATOR";break;}
+				}
+				result = "OTHER";
+				break;
+				}
+
+			default:
+				result =  "ERROR";
+				break;
+		}
+		return result;
+		*/
 	}
 
 	int char_to_input(char code) {

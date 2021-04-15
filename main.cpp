@@ -25,9 +25,12 @@
 #include "syntax.h"
 using namespace std;
 
+void lexicalAnalysis(vector<string>, vector<tokens>&);
+
 int main(int argc, char *argv[])
 {	
-	vector<string> codeVector;
+	vector<string> code;
+	vector<tokens> tokenVec;
 	ofstream fout;
 	ifstream fin;
 	string file_name;
@@ -43,17 +46,29 @@ int main(int argc, char *argv[])
 	if (!fin.is_open())
 		{cerr << "File Opening Error\n"; exit(-1);}
 
-	while (getline(fin, line)) {codeVector.push_back(line);}
+	while (getline(fin, line)) {code.push_back(line);}
 	fin.close();
 
-	//LEXER
-	cout << "Time for lexer to do its thing...." << endl;
-	// These have been changed and are good to go
-	vector<tokens> lexerStorage;
+	// Lex the code 
+	lexicalAnalysis(code,tokenVec);
+	fout.open("output.txt");
+	if(!fout.is_open()){ cout << "Output File Error\n"; exit(1);}
+	if (!syntaxAnalyze(tokenVec, fout)) {
+		cout << "Syntax error" << endl;
+		fout << "ERROR: syntax error found in the source code" << endl;
+	}
+
+	fout.close();
+
+	return 0;
+}
+
+// Lexical analysis implementation with finite state machine
+void lexicalAnalysis(vector<string>codeVector, vector<tokens> &tokenizedCode){
 	FSM machine;
 	int state = 0;
-	int lexStart = 0;
-	
+	long long unsigned int lexStart = 0;
+	cout << "Time for lexer to do its thing...." << endl;
 	// Change variable names and logic/port to function
 		// These for loops need the ugly ass integer type because of the return type of .size() and .length()
 	for (long long unsigned int vecString = 0; vecString < codeVector.size(); vecString++) {
@@ -62,9 +77,9 @@ int main(int argc, char *argv[])
 				lexStart = vecChar;
 			}
 			// Combined two lines
-			state = machine.check_input(state, machine.char_to_input(codeVector[vecString][vecChar]));
+			state = machine.inputCheck(state, machine.char_to_input(codeVector[vecString][vecChar]));
 			if (machine.is_final_state(state)) {
-				if (machine.should_back_up(state)) {
+				if (machine.backup(state)) {
 					vecChar--;
 				}
 				if (state != 7) {
@@ -72,26 +87,15 @@ int main(int argc, char *argv[])
 					for (long long unsigned int i = lexStart; i <= vecChar; i++) {
 						lex += codeVector[vecString][i];
 					}
-					if (machine.getTokenName(state, lex) != "OTHER") {
-
-						string tok = machine.getTokenName(state, lex);
-						cout << "token: " << tok << endl;
-						lexerStorage.push_back(tokens(tok, lex));
+					if (machine.getToken(state, lex) != "OTHER") {
+						string tok = machine.getToken(state, lex);
+						cout << "token: " << tok << " lex: "<< lex << endl;
+						tokenizedCode.push_back(tokens(tok, lex));
 					}
 				}
 				state = 0;
 			}
 		}
 	}
-
-	fout.open("output.txt");
-	if(!fout.is_open()){ cout << "Output File Error\n"; exit(1);}
-	if (!syntaxAnalyze(lexerStorage, fout)) {
-		cout << "Syntax error" << endl;
-		fout << "ERROR: syntax error found in the source code" << endl;
-	}
-
-	fout.close();
-
-	return 0;
+	return;
 }
